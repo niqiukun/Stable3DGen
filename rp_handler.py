@@ -1,3 +1,4 @@
+import runpod
 import app
 
 def handler(event):
