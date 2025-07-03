@@ -37,7 +37,7 @@ def handler(event):
         print(f"Error: Failed to load image '{image_path}': {e}")
         return
     
-    _, mesh_path = app.generate_3d(
+    _, mesh_path, _ = app.generate_3d(
         image,
         seed,
         ss_guidance_strength,
