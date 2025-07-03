@@ -36,6 +36,8 @@ import numpy as np
 from hi3dgen.pipelines import Hi3DGenPipeline
 import trimesh
 import tempfile
+import argparse
+from PIL import Image
 
 MAX_SEED = np.iinfo(np.int32).max
 TMP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tmp')
@@ -262,6 +264,42 @@ with gr.Blocks(css="footer {visibility: hidden}") as demo:
         **Your contributions and collaboration push the boundaries of 3D modeling!**
         """
     )
+    
+def generate_3d_cli():
+    parser = argparse.ArgumentParser(description="Generate 3D geometry from an image.")
+    parser.add_argument("--image", type=str, required=True, help="Path to the input image.")
+    parser.add_argument("--seed", type=int, default=-1, help="Seed for random number generation.")
+    parser.add_argument("--ss_guidance_strength", type=float, default=3.0, help="Sparse structure guidance strength.")
+    parser.add_argument("--ss_sampling_steps", type=int, default=50, help="Sparse structure sampling steps.")
+    parser.add_argument("--slat_guidance_strength", type=float, default=3.0, help="Structured latent guidance strength.")
+    parser.add_argument("--slat_sampling_steps", type=int, default=6, help="Structured latent sampling steps.")
+    args = parser.parse_args()
+
+    # Validate image path
+    if not os.path.exists(args.image):
+        print(f"Error: Image file '{args.image}' not found.")
+        return
+    
+    try:
+        # Load the image using Pillow
+        image = Image.open(args.image)
+    except Exception as e:
+        print(f"Error: Failed to load image '{args.image}': {e}")
+        return
+
+    # Generate 3D geometry
+    normal_image, mesh_path, _ = generate_3d(
+        image=image,
+        seed=args.seed,
+        ss_guidance_strength=args.ss_guidance_strength,
+        ss_sampling_steps=args.ss_sampling_steps,
+        slat_guidance_strength=args.slat_guidance_strength,
+        slat_sampling_steps=args.slat_sampling_steps,
+    )
+
+    # Output results
+    print(f"Normal Image Path: {normal_image}")
+    print(f"Generated Mesh Path: {mesh_path}")
 
 if __name__ == "__main__":
     # Download and cache the weights
@@ -277,5 +315,6 @@ if __name__ == "__main__":
         normal_predictor = torch.hub.load("hugoycj/StableNormal", "StableNormal_turbo", trust_repo=True, yoso_version='yoso-normal-v1-8-1', local_cache_dir='./weights')    
 
     # Launch the app
-    demo.launch(share=False, server_name="0.0.0.0")
+    # demo.launch(share=False, server_name="0.0.0.0")
+    generate_3d_cli()
 
