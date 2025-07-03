@@ -21,6 +21,8 @@ def handler(event):
     slat_guidance_strength = input.get('slat_guidance_strength', 3)
     slat_sampling_steps = input.get('slat_sampling_steps', 6)
     
+    app.initialize()
+    
     _, mesh_path = app.generate_3d(
         image,
         seed,

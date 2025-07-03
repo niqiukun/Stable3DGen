@@ -300,6 +300,22 @@ def generate_3d_cli():
     # Output results
     print(f"Normal Image Path: {normal_image}")
     print(f"Generated Mesh Path: {mesh_path}")
+    
+def initialize():
+    global hi3dgen_pipeline, normal_predictor
+    
+    # Download and cache the weights
+    cache_weights(WEIGHTS_DIR)
+
+    hi3dgen_pipeline = Hi3DGenPipeline.from_pretrained("weights/trellis-normal-v0-1")
+    hi3dgen_pipeline.cuda()
+
+    # Initialize normal predictor
+    try:
+        normal_predictor = torch.hub.load(os.path.join(torch.hub.get_dir(), 'hugoycj_StableNormal_main'), "StableNormal_turbo", yoso_version='yoso-normal-v1-8-1', source='local', local_cache_dir='./weights', pretrained=True)
+    except:
+        normal_predictor = torch.hub.load("hugoycj/StableNormal", "StableNormal_turbo", trust_repo=True, yoso_version='yoso-normal-v1-8-1', local_cache_dir='./weights')    
+
 
 if __name__ == "__main__":
     # Download and cache the weights
